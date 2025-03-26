@@ -1,23 +1,30 @@
-[gd_scene load_steps=4 format=3 uid="uid://dyevjwqt71k0t"]
+[gd_scene load_steps=5 format=3 uid="uid://dyevjwqt71k0t"]
 
 [ext_resource type="Script" uid="uid://cll1hve3njqcu" path="res://scripts/card.gd" id="1_6u4wf"]
 [ext_resource type="Texture2D" uid="uid://2gsmk1i7jvna" path="res://assets/cardsLarge_tilemap_packed.png" id="2_ktuci"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_kg30u"]
+[sub_resource type="AtlasTexture" id="AtlasTexture_6u4wf"]
 atlas = ExtResource("2_ktuci")
 region = Rect2(11, 2, 42, 60)
 
-[node name="Card" type="Control"]
-layout_mode = 3
-anchors_preset = 0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6u4wf"]
+size = Vector2(42, 60)
+
+[node name="Card" type="Node2D"]
+texture_filter = 1
 script = ExtResource("1_6u4wf")
 cardAtlas = ExtResource("2_ktuci")
 
-[node name="TextureRect" type="TextureRect" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(4, 4)
-texture = SubResource("AtlasTexture_kg30u")
+texture = SubResource("AtlasTexture_6u4wf")
 
-[connection signal="gui_input" from="." to="." method="_on_gui_input"]
+[node name="Area2D" type="Area2D" parent="."]
+scale = Vector2(4, 4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_6u4wf")
+
+[connection signal="input_event" from="Area2D" to="." method="_on_area_2d_input_event"]
+[connection signal="mouse_entered" from="Area2D" to="." method="_on_area_2d_mouse_entered"]
+[connection signal="mouse_exited" from="Area2D" to="." method="_on_area_2d_mouse_exited"]
