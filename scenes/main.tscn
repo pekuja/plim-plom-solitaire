@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dno1hy72gpft8"]
+
+[ext_resource type="Script" uid="uid://c5ksntwd85jrw" path="res://scripts/main.gd" id="1_0wfyh"]
+[ext_resource type="PackedScene" uid="uid://dyevjwqt71k0t" path="res://scenes/card.tscn" id="1_o5qli"]
+
+[node name="Main" type="Control"]
+texture_filter = 1
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_0wfyh")
+_card_scene = ExtResource("1_o5qli")

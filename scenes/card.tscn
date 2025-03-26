@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://dyevjwqt71k0t"]
+
+[ext_resource type="Script" uid="uid://cll1hve3njqcu" path="res://scripts/card.gd" id="1_6u4wf"]
+[ext_resource type="Texture2D" uid="uid://2gsmk1i7jvna" path="res://assets/cardsLarge_tilemap_packed.png" id="2_ktuci"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kg30u"]
+atlas = ExtResource("2_ktuci")
+region = Rect2(11, 2, 42, 60)
+
+[node name="Card" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_6u4wf")
+cardAtlas = ExtResource("2_ktuci")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(4, 4)
+texture = SubResource("AtlasTexture_kg30u")
+
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
