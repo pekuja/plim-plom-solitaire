@@ -2,6 +2,7 @@ class_name Card extends Node2D
 
 @onready var _sprite2D = $Sprite2D
 @onready var _area2D = $Area2D
+@onready var _label = $Label
 
 enum Suit
 {
@@ -24,11 +25,10 @@ const CARD_OFFSET_X = 11
 const CARD_OFFSET_Y = 2
 const SUIT_INCREMENT_Y = 64
 const VALUE_INCREMENT_X = 64
-const PILE_OFFSET = 32
+const PILE_OFFSET = 60
 
 var is_dragging : bool = false
 var dragging_offset : Vector2 = Vector2(0,0)
-var drag_start_position : Vector2 = Vector2(0,0)
 
 static var hovered_cards : Array[Card] = []
 
@@ -57,6 +57,9 @@ func _ready():
 	
 	update_texture()
 	
+func _process(_delta):
+	_label.text = "%s" % z_index
+	
 func is_draggable():
 	# TODO: Support dragging piles of cards
 	if not is_top_card():
@@ -66,8 +69,8 @@ func is_draggable():
 	return true
 	
 func is_top_card():
-	var child_cards = find_children("*", "Card")
-	return child_cards.is_empty()
+	var child_card = get_node_or_null("Card")
+	return child_card == null
 	
 func update_texture():
 	var atlasTexture : AtlasTexture = _sprite2D.texture
@@ -109,9 +112,11 @@ func _input(event : InputEvent) -> void:
 			elif parent is Card:
 				position.x = 0
 				position.y = PILE_OFFSET
+				z_index = parent.z_index + 1
 			else:
 				position.x = 0
 				position.y = 0
+				z_index = 0
 			is_dragging = false
 	if event is InputEventMouseMotion:
 		if is_dragging:
@@ -120,15 +125,15 @@ func _input(event : InputEvent) -> void:
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed == true:
+			for card in hovered_cards:
+				if card.z_index > z_index:
+					return
+			
 			card_clicked.emit()
 			if is_draggable():
-				for card in hovered_cards:
-					if card.z_index > z_index:
-						return
 				z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 				is_dragging = true
 				is_face_up = true
-				drag_start_position = global_position
 				update_texture()
 				dragging_offset = event.position - global_position
 

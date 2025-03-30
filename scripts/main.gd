@@ -22,6 +22,21 @@ extends Node2D
 
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
+var _draw_pile_top_card : Card = null
+
+func get_draw_pile_top_card() -> Card:
+	var card : Card = _draw_pile_locator.get_node("Card")
+	if card == null:
+		return card
+	
+	while true:
+		var child = card.get_node("Card")
+		if child:
+			card = child
+		else:
+			return card
+	
+	return null
 
 func _ready():
 	generate_card_deck()
@@ -66,16 +81,22 @@ func deck_clicked():
 		
 	var parent = _deck_top_card.get_parent()
 	parent.remove_child(_deck_top_card)
-	_draw_pile_locator.add_child(_deck_top_card)
+	
+	var draw_pile_top_card = get_draw_pile_top_card()
+	
+	if draw_pile_top_card:
+		draw_pile_top_card.add_child(_deck_top_card)
+		_deck_top_card.z_index = draw_pile_top_card.z_index + 1
+	else:
+		_draw_pile_locator.add_child(_deck_top_card)
+		_deck_top_card.z_index = 0
 	_deck_top_card.is_face_up = true
 	_deck_top_card.update_texture()
 	
 	if parent is Card:
-		print("parent is card")
 		_deck_top_card = parent
 		_deck_top_card.card_clicked.connect(deck_clicked)
 	else:
-		print("parent is ", parent)
 		_deck_top_card = null
 	
 func generate_card_deck():
