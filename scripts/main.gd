@@ -49,6 +49,7 @@ func _ready():
 	for card in _card_deck:
 		card.z_index = index
 		if pile_index < 7:
+			card.location = Card.Location.Pile
 			var pile = _piles[pile_index]
 			if _deck_top_card:
 				card.position.y = Card.PILE_OFFSET
@@ -67,6 +68,7 @@ func _ready():
 				pile_index += 1
 			
 		else:
+			card.location = Card.Location.Deck
 			if _deck_top_card:
 				_deck_top_card.add_child(card)
 			else:
@@ -92,6 +94,7 @@ func deck_clicked():
 		_deck_top_card.z_index = 0
 	_deck_top_card.is_face_up = true
 	_deck_top_card.update_texture()
+	_deck_top_card.location = Card.Location.Draw
 	
 	if parent is Card:
 		_deck_top_card = parent

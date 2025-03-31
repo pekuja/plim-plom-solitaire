@@ -13,39 +13,52 @@ _card_scene = ExtResource("1_o5qli")
 
 [node name="Deck" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-809, -371)
+location = 1
 
 [node name="Draw Pile" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-592, -371)
+location = 2
 
 [node name="Stack 1" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-133, -372)
+location = 4
 
 [node name="Stack 2" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(90, -372)
+location = 4
 
 [node name="Stack 3" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(335, -372)
+location = 4
 
 [node name="Stack 4" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(568, -372)
+location = 4
 
 [node name="Pile 1" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-815, -60)
+location = 3
 
 [node name="Pile 2" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-587, -60)
+location = 3
 
 [node name="Pile 3" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-365, -60)
+location = 3
 
 [node name="Pile 4" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-135, -60)
+location = 3
 
 [node name="Pile 5" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(100, -60)
+location = 3
 
 [node name="Pile 6" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(338, -60)
+location = 3
 
 [node name="Pile 7" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(572, -60)
+location = 3

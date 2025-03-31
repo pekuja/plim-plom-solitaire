@@ -12,10 +12,20 @@ enum Suit
 	Spade = 3
 }
 
+enum Location
+{
+	None,
+	Deck,
+	Draw,
+	Pile,
+	Stack
+}
+
 @export var value = 1
 @export var suit : Suit = Suit.Heart
 @export var cardAtlas : Texture2D
 @export var is_face_up = true
+@export var location : Location = Location.None
 
 signal card_clicked
 
@@ -39,14 +49,20 @@ func is_black():
 	return suit == Suit.Club or suit == Suit.Spade
 	
 func is_legal_drop(other_card : Card):
-	if not is_face_up:
+	if location == Location.None or location == Location.Deck or location == Location.Draw:
 		return false
 	if not is_top_card():
 		return false
-	if is_black() and other_card.is_black() or is_red() and other_card.is_red():
-		return false
-	if other_card.value != value - 1:
-		return false
+	if location == Location.Stack:
+		if suit != other_card.suit:
+			return false
+		if other_card.value != value + 1:
+			return false
+	if location == Location.Pile:
+		if (is_black() and other_card.is_black() or is_red() and other_card.is_red()):
+			return false
+		if other_card.value != value - 1:
+			return false
 	
 	return true
 
@@ -58,7 +74,7 @@ func _ready():
 	update_texture()
 	
 func _process(_delta):
-	_label.text = "%s" % z_index
+	_label.text = "%s\n%s" % [z_index, location]
 	
 func is_draggable():
 	# TODO: Support dragging piles of cards
@@ -87,16 +103,16 @@ func _input(event : InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed == false and is_dragging:
 			var closest_distance = 0.0
-			var card_to_drop_on : Card = null
+			var card_to_drop_on = null
 			for other_area2D : Area2D in _area2D.get_overlapping_areas():
-				var other_card : Card = other_area2D.get_parent()
-				if other_card and other_card != self:
-					if other_card.is_legal_drop(self):
-						var distance = other_card.global_position.distance_squared_to(global_position)
+				var other_card_or_pile = other_area2D.get_parent()
+				if (other_card_or_pile is Card or other_card_or_pile is CardPile) and other_card_or_pile != self:
+					if other_card_or_pile.is_legal_drop(self):
+						var distance = other_card_or_pile.global_position.distance_squared_to(global_position)
 						if card_to_drop_on == null or distance < closest_distance:
-							card_to_drop_on = other_card
+							card_to_drop_on = other_card_or_pile
 							closest_distance = closest_distance
-			
+							
 			
 			var parent = get_parent()
 			if card_to_drop_on:
@@ -106,12 +122,20 @@ func _input(event : InputEvent) -> void:
 					parent.update_texture()
 				parent.remove_child(self)
 				card_to_drop_on.add_child(self)
+				location = card_to_drop_on.location
 				
 				position.x = 0
-				position.y = PILE_OFFSET
+				if card_to_drop_on.location == Location.Pile and card_to_drop_on is Card:
+					position.y = PILE_OFFSET
+				else:
+					position.y = 0
+					
 			elif parent is Card:
 				position.x = 0
-				position.y = PILE_OFFSET
+				if parent.location == Location.Pile:
+					position.y = PILE_OFFSET
+				else:
+					position.y = 0
 				z_index = parent.z_index + 1
 			else:
 				position.x = 0
@@ -129,13 +153,14 @@ func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) 
 				if card.z_index > z_index:
 					return
 			
-			card_clicked.emit()
 			if is_draggable():
 				z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 				is_dragging = true
 				is_face_up = true
 				update_texture()
 				dragging_offset = event.position - global_position
+			
+			card_clicked.emit()
 
 func _on_area_2d_mouse_entered() -> void:
 	hovered_cards.append(self)
