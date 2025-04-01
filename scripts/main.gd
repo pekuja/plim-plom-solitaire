@@ -2,8 +2,8 @@ extends Node2D
 
 @export var _card_scene : PackedScene
 
-@onready var _deck_locator = $Deck
-@onready var _draw_pile_locator = $"Draw Pile"
+@onready var _deck_locator : CardPile = $Deck
+@onready var _draw_pile_locator : CardPile = $"Draw Pile"
 @onready var _piles = [
 	$"Pile 1",
 	$"Pile 2",
@@ -30,7 +30,7 @@ func get_draw_pile_top_card() -> Card:
 		return card
 	
 	while true:
-		var child = card.get_node("Card")
+		var child = card.get_node_or_null("Card")
 		if child:
 			card = child
 		else:
@@ -47,7 +47,6 @@ func _ready():
 	var pile_index = 0
 	_deck_top_card = null
 	for card in _card_deck:
-		card.z_index = index
 		if pile_index < 7:
 			card.location = Card.Location.Pile
 			var pile = _piles[pile_index]
@@ -75,32 +74,52 @@ func _ready():
 				_deck_locator.add_child(card)
 			_deck_top_card = card
 			index += 1
-		
-	_deck_top_card.card_clicked.connect(deck_clicked)
+	
+	_deck_locator.pile_clicked.connect(deck_clicked)
 	
 func deck_clicked():
-	_deck_top_card.card_clicked.disconnect(deck_clicked)
+	if _deck_top_card == null:
+		var draw_pile_top_card : Card = null
+		var next_card : Card = _draw_pile_locator.get_node_or_null("Card")
 		
-	var parent = _deck_top_card.get_parent()
-	parent.remove_child(_deck_top_card)
-	
-	var draw_pile_top_card = get_draw_pile_top_card()
-	
-	if draw_pile_top_card:
-		draw_pile_top_card.add_child(_deck_top_card)
-		_deck_top_card.z_index = draw_pile_top_card.z_index + 1
+		while next_card != null:
+			draw_pile_top_card = next_card
+			next_card = next_card.get_node_or_null("Card")
+		
+		next_card = draw_pile_top_card
+		while next_card != null:
+			next_card.is_face_up = false
+			next_card.update_texture()
+			
+			var parent = next_card.get_parent()
+			parent.remove_child(next_card)
+			if _deck_top_card:
+				_deck_top_card.add_child(next_card)
+			else:
+				_deck_locator.add_child(next_card)
+			_deck_top_card = next_card
+			if parent is Card:
+				next_card = parent
+			else:
+				next_card = null	
 	else:
-		_draw_pile_locator.add_child(_deck_top_card)
-		_deck_top_card.z_index = 0
-	_deck_top_card.is_face_up = true
-	_deck_top_card.update_texture()
-	_deck_top_card.location = Card.Location.Draw
-	
-	if parent is Card:
-		_deck_top_card = parent
-		_deck_top_card.card_clicked.connect(deck_clicked)
-	else:
-		_deck_top_card = null
+		var parent = _deck_top_card.get_parent()
+		parent.remove_child(_deck_top_card)
+		
+		var draw_pile_top_card = get_draw_pile_top_card()
+		
+		if draw_pile_top_card:
+			draw_pile_top_card.add_child(_deck_top_card)
+		else:
+			_draw_pile_locator.add_child(_deck_top_card)
+		_deck_top_card.is_face_up = true
+		_deck_top_card.update_texture()
+		_deck_top_card.location = Card.Location.Draw
+		
+		if parent is Card:
+			_deck_top_card = parent
+		else:
+			_deck_top_card = null
 	
 func generate_card_deck():
 	generate_card_suit(Card.Suit.Heart)

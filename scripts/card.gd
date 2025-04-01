@@ -53,13 +53,18 @@ func is_legal_drop(other_card : Card):
 		return false
 	if not is_top_card():
 		return false
+	return is_sequential(other_card)
+	
+func is_sequential(other_card : Card):
 	if location == Location.Stack:
 		if suit != other_card.suit:
 			return false
 		if other_card.value != value + 1:
 			return false
+		if not other_card.is_top_card():
+			return false
 	if location == Location.Pile:
-		if (is_black() and other_card.is_black() or is_red() and other_card.is_red()):
+		if (is_black() and other_card.is_black()) or (is_red() and other_card.is_red()):
 			return false
 		if other_card.value != value - 1:
 			return false
@@ -74,12 +79,19 @@ func _ready():
 	update_texture()
 	
 func _process(_delta):
-	_label.text = "%s\n%s" % [z_index, location]
+	_label.text = "%s\n%s" % [get_absolute_z_index(), location]
 	
 func is_draggable():
-	# TODO: Support dragging piles of cards
-	if not is_top_card():
+	if location == Location.None or location == Location.Stack:
 		return false
+	if not is_top_card():
+		if location != Location.Pile:
+			return false
+		var next_card : Card = get_node("Card")
+		if not is_sequential(next_card):
+			return false
+		if not next_card.is_draggable():
+			return false
 	if not is_face_up:
 		return false
 	return true
@@ -102,6 +114,7 @@ func update_texture():
 func _input(event : InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed == false and is_dragging:
+			z_index = 1
 			var closest_distance = 0.0
 			var card_to_drop_on = null
 			for other_area2D : Area2D in _area2D.get_overlapping_areas():
@@ -116,7 +129,6 @@ func _input(event : InputEvent) -> void:
 			
 			var parent = get_parent()
 			if card_to_drop_on:
-				z_index = card_to_drop_on.z_index + 1
 				if parent is Card:
 					parent.is_face_up = true
 					parent.update_texture()
@@ -136,11 +148,9 @@ func _input(event : InputEvent) -> void:
 					position.y = PILE_OFFSET
 				else:
 					position.y = 0
-				z_index = parent.z_index + 1
 			else:
 				position.x = 0
 				position.y = 0
-				z_index = 0
 			is_dragging = false
 	if event is InputEventMouseMotion:
 		if is_dragging:
@@ -148,11 +158,12 @@ func _input(event : InputEvent) -> void:
 
 func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed == true:
+		if event.is_pressed():
 			for card in hovered_cards:
-				if card.z_index > z_index:
+				var absolute_z_index = get_absolute_z_index()
+				if card != self and card.get_absolute_z_index() > absolute_z_index:
 					return
-			
+					
 			if is_draggable():
 				z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 				is_dragging = true
@@ -161,6 +172,12 @@ func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) 
 				dragging_offset = event.position - global_position
 			
 			card_clicked.emit()
+
+func get_absolute_z_index() -> int:
+	var parent = get_parent()
+	if parent is Card:
+		return parent.get_absolute_z_index() + z_index
+	return z_index
 
 func _on_area_2d_mouse_entered() -> void:
 	hovered_cards.append(self)
