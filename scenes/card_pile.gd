@@ -13,11 +13,11 @@ func is_legal_drop(card : Card):
 		return false
 	if not is_top_card():
 		return false
-	if location == Card.Location.Stack and not card.is_top_card():
+	if location == Card.Location.Foundation and not card.is_top_card():
 		return false
-	if location == Card.Location.Stack and card.value != 1:
+	if location == Card.Location.Foundation and card.value != 1:
 		return false
-	if location == Card.Location.Pile and card.value != 13:
+	if location == Card.Location.Tableau and card.value != 13:
 		return false
 	
 	return true

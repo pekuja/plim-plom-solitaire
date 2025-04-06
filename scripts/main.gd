@@ -4,20 +4,14 @@ extends Node2D
 
 @onready var _deck_locator : CardPile = $Deck
 @onready var _draw_pile_locator : CardPile = $"Draw Pile"
-@onready var _piles = [
-	$"Pile 1",
-	$"Pile 2",
-	$"Pile 3",
-	$"Pile 4",
-	$"Pile 5",
-	$"Pile 6",
-	$"Pile 7"
-	]
-@onready var _stacks = [
-	$"Stack 1",
-	$"Stack 2",
-	$"Stack 3",
-	$"Stack 4"
+@onready var _tableaus = [
+	$"Tableau 1",
+	$"Tableau 2",
+	$"Tableau 3",
+	$"Tableau 4",
+	$"Tableau 5",
+	$"Tableau 6",
+	$"Tableau 7"
 	]
 
 var _card_deck : Array[Card] = []
@@ -44,27 +38,27 @@ func _ready():
 	_card_deck.shuffle()
 	
 	var index = 0
-	var pile_index = 0
+	var tableau_index = 0
 	_deck_top_card = null
 	for card in _card_deck:
-		if pile_index < 7:
-			card.location = Card.Location.Pile
-			var pile = _piles[pile_index]
+		if tableau_index < 7:
+			card.location = Card.Location.Tableau
+			var tableau = _tableaus[tableau_index]
 			if _deck_top_card:
 				card.position.y = Card.PILE_OFFSET
 				_deck_top_card.add_child(card)
 			else:
-				pile.add_child(card)
+				tableau.add_child(card)
 			_deck_top_card = card
 			
 			index += 1
 			
-			if index > pile_index:
+			if index > tableau_index:
 				card.is_face_up = true
 				card.update_texture()
 				_deck_top_card = null
 				index = 0
-				pile_index += 1
+				tableau_index += 1
 			
 		else:
 			card.location = Card.Location.Deck

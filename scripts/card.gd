@@ -17,8 +17,8 @@ enum Location
 	None,
 	Deck,
 	Draw,
-	Pile,
-	Stack
+	Tableau,
+	Foundation
 }
 
 @export var value = 1
@@ -56,14 +56,14 @@ func is_legal_drop(other_card : Card):
 	return is_sequential(other_card)
 	
 func is_sequential(other_card : Card):
-	if location == Location.Stack:
+	if location == Location.Foundation:
 		if suit != other_card.suit:
 			return false
 		if other_card.value != value + 1:
 			return false
 		if not other_card.is_top_card():
 			return false
-	if location == Location.Pile:
+	if location == Location.Tableau:
 		if (is_black() and other_card.is_black()) or (is_red() and other_card.is_red()):
 			return false
 		if other_card.value != value - 1:
@@ -82,10 +82,10 @@ func _process(_delta):
 	_label.text = "%s\n%s" % [get_absolute_z_index(), location]
 	
 func is_draggable():
-	if location == Location.None or location == Location.Stack:
+	if location == Location.None or location == Location.Foundation:
 		return false
 	if not is_top_card():
-		if location != Location.Pile:
+		if location != Location.Tableau:
 			return false
 		var next_card : Card = get_node("Card")
 		if not is_sequential(next_card):
@@ -137,14 +137,14 @@ func _input(event : InputEvent) -> void:
 				location = card_to_drop_on.location
 				
 				position.x = 0
-				if card_to_drop_on.location == Location.Pile and card_to_drop_on is Card:
+				if card_to_drop_on.location == Location.Tableau and card_to_drop_on is Card:
 					position.y = PILE_OFFSET
 				else:
 					position.y = 0
 					
 			elif parent is Card:
 				position.x = 0
-				if parent.location == Location.Pile:
+				if parent.location == Location.Tableau:
 					position.y = PILE_OFFSET
 				else:
 					position.y = 0
