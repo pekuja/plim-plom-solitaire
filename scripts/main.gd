@@ -3,33 +3,35 @@ extends Node2D
 @export var _card_scene : PackedScene
 
 @onready var _deck_locator : CardPile = $Deck
-@onready var _draw_pile_locator : CardPile = $"Draw Pile"
 @onready var _tableaus = [
 	$"Tableau 1",
 	$"Tableau 2",
 	$"Tableau 3",
 	$"Tableau 4",
 	$"Tableau 5",
-	$"Tableau 6",
-	$"Tableau 7"
+	]
+	
+@onready var _cells = [
+	$"Cell 1",
+	$"Cell 2",
 	]
 
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
 
-func get_draw_pile_top_card() -> Card:
-	var card : Card = _draw_pile_locator.get_node("Card")
-	if card == null:
-		return card
+const CARDS_PER_TABLEAU = 5
+
+func get_tableau_or_top_card(tableau : Node2D) -> Node2D:	
+	var card : Card = tableau.get_node_or_null("Card")
+	if card:
+		while true:
+			var child = card.get_node_or_null("Card")
+			if child:
+				card = child
+			else:
+				return card
 	
-	while true:
-		var child = card.get_node_or_null("Card")
-		if child:
-			card = child
-		else:
-			return card
-	
-	return null
+	return tableau
 
 func _ready():
 	generate_card_deck()
@@ -40,7 +42,7 @@ func _ready():
 	var tableau_index = 0
 	_deck_top_card = null
 	for card in _card_deck:
-		if tableau_index < 7:
+		if tableau_index < _tableaus.size():
 			card.location = Card.Location.Tableau
 			var tableau = _tableaus[tableau_index]
 			if _deck_top_card:
@@ -52,13 +54,18 @@ func _ready():
 			
 			index += 1
 			
-			if index > tableau_index:
+			if index >= CARDS_PER_TABLEAU:
 				card.is_face_up = true
 				card.update_texture()
 				_deck_top_card = null
 				index = 0
 				tableau_index += 1
-			
+		elif index < _cells.size():
+			card.location = Card.Location.Cell
+			_cells[index].add_child(card)
+			card.is_face_up = true
+			card.update_texture()
+			index += 1
 		else:
 			card.location = Card.Location.Deck
 			if _deck_top_card:
@@ -71,48 +78,27 @@ func _ready():
 	_deck_locator.pile_clicked.connect(deck_clicked)
 	
 func deck_clicked():
-	if _deck_top_card == null:
-		var draw_pile_top_card : Card = null
-		var next_card : Card = _draw_pile_locator.get_node_or_null("Card")
-		
-		while next_card != null:
-			draw_pile_top_card = next_card
-			next_card = next_card.get_node_or_null("Card")
-		
-		next_card = draw_pile_top_card
-		while next_card != null:
-			next_card.is_face_up = false
-			next_card.update_texture()
+	if _deck_top_card:
+		for tableau in _tableaus:
+			var parent = _deck_top_card.get_parent()
+			parent.remove_child(_deck_top_card)
 			
-			var parent = next_card.get_parent()
-			parent.remove_child(next_card)
-			if _deck_top_card:
-				_deck_top_card.add_child(next_card)
-			else:
-				_deck_locator.add_child(next_card)
-			_deck_top_card = next_card
+			var tableau_or_top_card = get_tableau_or_top_card(tableau)
+			
+			tableau_or_top_card.add_child(_deck_top_card)
+			
+			_deck_top_card.is_face_up = true
+			_deck_top_card.update_texture()
+			_deck_top_card.location = Card.Location.Tableau
+			
+			if tableau_or_top_card is Card:
+				_deck_top_card.position.y = Card.PILE_OFFSET
+			
 			if parent is Card:
-				next_card = parent
+				_deck_top_card = parent
 			else:
-				next_card = null	
-	else:
-		var parent = _deck_top_card.get_parent()
-		parent.remove_child(_deck_top_card)
-		
-		var draw_pile_top_card = get_draw_pile_top_card()
-		
-		if draw_pile_top_card:
-			draw_pile_top_card.add_child(_deck_top_card)
-		else:
-			_draw_pile_locator.add_child(_deck_top_card)
-		_deck_top_card.is_face_up = true
-		_deck_top_card.update_texture()
-		_deck_top_card.location = Card.Location.Draw
-		
-		if parent is Card:
-			_deck_top_card = parent
-		else:
-			_deck_top_card = null
+				_deck_top_card = null
+				break
 	
 func generate_card_deck():
 	generate_card_suit(Card.Suit.Heart)

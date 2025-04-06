@@ -12,53 +12,49 @@ _card_scene = ExtResource("1_o5qli")
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="Deck" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-809, -371)
+position = Vector2(400, 820)
 location = 1
 
-[node name="Draw Pile" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-592, -371)
-location = 2
+[node name="Cell 1" parent="." instance=ExtResource("3_sugp2")]
+position = Vector2(-400, 820)
+location = 1
+
+[node name="Cell 2" parent="." instance=ExtResource("3_sugp2")]
+position = Vector2(-200, 820)
+location = 1
 
 [node name="Foundation 1" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-133, -372)
+position = Vector2(-400, -810)
 location = 4
 
 [node name="Foundation 2" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(90, -372)
+position = Vector2(-200, -810)
 location = 4
 
 [node name="Foundation 3" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(335, -372)
+position = Vector2(0, -810)
 location = 4
 
 [node name="Foundation 4" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(568, -372)
+position = Vector2(200, -810)
 location = 4
 
 [node name="Tableau 1" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-815, -60)
+position = Vector2(-400, -550)
 location = 3
 
 [node name="Tableau 2" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-587, -60)
+position = Vector2(-200, -550)
 location = 3
 
 [node name="Tableau 3" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-365, -60)
+position = Vector2(0, -550)
 location = 3
 
 [node name="Tableau 4" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(-135, -60)
+position = Vector2(200, -550)
 location = 3
 
 [node name="Tableau 5" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(100, -60)
-location = 3
-
-[node name="Tableau 6" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(338, -60)
-location = 3
-
-[node name="Tableau 7" parent="." instance=ExtResource("3_sugp2")]
-position = Vector2(572, -60)
+position = Vector2(400, -550)
 location = 3

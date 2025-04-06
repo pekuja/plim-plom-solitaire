@@ -9,7 +9,8 @@ func is_top_card():
 	return child_card == null
 
 func is_legal_drop(card : Card):
-	if location == Card.Location.None or location == Card.Location.Deck or location == Card.Location.Draw:
+	if location == Card.Location.None or location == Card.Location.Deck or \
+		location == Card.Location.Cell or location == Card.Location.Draw:
 		return false
 	if not is_top_card():
 		return false

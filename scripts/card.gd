@@ -36,7 +36,7 @@ const CARD_OFFSET_X = 11
 const CARD_OFFSET_Y = 2
 const SUIT_INCREMENT_Y = 64
 const VALUE_INCREMENT_X = 64
-const PILE_OFFSET = 60
+const PILE_OFFSET = 56
 
 var _is_dragging : bool = false
 var dragging_offset : Vector2 = Vector2(0,0)
@@ -50,11 +50,14 @@ func is_black():
 	return suit == Suit.Club or suit == Suit.Spade
 	
 func is_legal_drop(other_card : Card):
-	if location == Location.None or location == Location.Deck or location == Location.Draw:
+	if location == Location.None or location == Location.Deck or \
+		location == Location.Cell or location == Location.Draw:
 		return false
 	if is_dragging():
 		return false
 	if not is_top_card():
+		return false
+	if location == Location.Tableau and get_pile_size() >= 20:
 		return false
 	return is_sequential(other_card)
 	
@@ -71,6 +74,15 @@ func is_sequential(other_card : Card):
 			return false
 	
 	return true
+	
+func get_pile_size():
+	var parent = get_parent()
+	var pile_size = 1
+	while parent is Card:
+		pile_size += 1
+		parent = parent.get_parent()
+	
+	return pile_size
 
 func _ready():
 	var atlasTexture : AtlasTexture = AtlasTexture.new()
@@ -137,7 +149,7 @@ func _input(event : InputEvent) -> void:
 						var distance = other_card_or_pile.global_position.distance_squared_to(global_position)
 						if card_to_drop_on == null or distance < closest_distance:
 							card_to_drop_on = other_card_or_pile
-							closest_distance = closest_distance
+							closest_distance = distance
 							
 			
 			var parent = get_parent()
