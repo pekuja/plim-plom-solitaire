@@ -18,7 +18,8 @@ enum Location
 	Deck,
 	Draw,
 	Tableau,
-	Foundation
+	Foundation,
+	Cell
 }
 
 @export var value = 1
@@ -37,7 +38,7 @@ const SUIT_INCREMENT_Y = 64
 const VALUE_INCREMENT_X = 64
 const PILE_OFFSET = 60
 
-var is_dragging : bool = false
+var _is_dragging : bool = false
 var dragging_offset : Vector2 = Vector2(0,0)
 
 static var hovered_cards : Array[Card] = []
@@ -50,6 +51,8 @@ func is_black():
 	
 func is_legal_drop(other_card : Card):
 	if location == Location.None or location == Location.Deck or location == Location.Draw:
+		return false
+	if is_dragging():
 		return false
 	if not is_top_card():
 		return false
@@ -64,9 +67,7 @@ func is_sequential(other_card : Card):
 		if not other_card.is_top_card():
 			return false
 	if location == Location.Tableau:
-		if (is_black() and other_card.is_black()) or (is_red() and other_card.is_red()):
-			return false
-		if other_card.value != value - 1:
+		if other_card.value != value - 1 and other_card.value != value + 1:
 			return false
 	
 	return true
@@ -88,6 +89,8 @@ func is_draggable():
 		if location != Location.Tableau:
 			return false
 		var next_card : Card = get_node("Card")
+		if next_card.suit != suit:
+			return false
 		if not is_sequential(next_card):
 			return false
 		if not next_card.is_draggable():
@@ -99,6 +102,16 @@ func is_draggable():
 func is_top_card():
 	var child_card = get_node_or_null("Card")
 	return child_card == null
+	
+func is_dragging():
+	if _is_dragging:
+		return true
+	
+	var parent = get_parent()
+	if parent is Card:
+		return parent.is_dragging()
+		
+	return false
 	
 func update_texture():
 	var atlasTexture : AtlasTexture = _sprite2D.texture
@@ -113,7 +126,7 @@ func update_texture():
 
 func _input(event : InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed == false and is_dragging:
+		if event.pressed == false and _is_dragging:
 			z_index = 1
 			var closest_distance = 0.0
 			var card_to_drop_on = null
@@ -151,12 +164,12 @@ func _input(event : InputEvent) -> void:
 			else:
 				position.x = 0
 				position.y = 0
-			is_dragging = false
+			_is_dragging = false
 	if event is InputEventMouseMotion:
-		if is_dragging:
+		if _is_dragging:
 			global_position = event.position - dragging_offset
 
-func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+func _on_area_2d_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
 			for card in hovered_cards:
@@ -166,7 +179,7 @@ func _on_area_2d_input_event(viewport: Node, event: InputEvent, shape_idx: int) 
 					
 			if is_draggable():
 				z_index = RenderingServer.CANVAS_ITEM_Z_MAX
-				is_dragging = true
+				_is_dragging = true
 				is_face_up = true
 				update_texture()
 				dragging_offset = event.position - global_position

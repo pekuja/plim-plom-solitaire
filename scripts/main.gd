@@ -16,7 +16,6 @@ extends Node2D
 
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
-var _draw_pile_top_card : Card = null
 
 func get_draw_pile_top_card() -> Card:
 	var card : Card = _draw_pile_locator.get_node("Card")
