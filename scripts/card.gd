@@ -28,8 +28,6 @@ enum Location
 @export var is_face_up = true
 @export var location : Location = Location.None
 
-signal card_clicked
-
 const CARD_WIDTH = 42
 const CARD_HEIGHT = 60
 const CARD_OFFSET_X = 11
@@ -39,9 +37,10 @@ const VALUE_INCREMENT_X = 64
 const PILE_OFFSET = 56
 
 var _is_dragging : bool = false
+var _dragging_touch_index = -1
 var dragging_offset : Vector2 = Vector2(0,0)
 
-static var hovered_cards : Array[Card] = []
+static var is_a_card_being_dragged = false
 
 func is_red():
 	return suit == Suit.Heart or suit == Suit.Diamond
@@ -137,8 +136,46 @@ func update_texture():
 	atlasTexture.region.size.y = CARD_HEIGHT
 
 func _input(event : InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed == false and _is_dragging:
+	if event is InputEventScreenTouch:
+		if event.is_pressed():
+			# only one drag allowed at once
+			if is_a_card_being_dragged:
+				return
+				
+			if not is_draggable():
+				return
+			
+			var view_to_world = get_canvas_transform().affine_inverse()
+			var touch_position = view_to_world * event.position
+			var space_state = get_world_2d().direct_space_state
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = touch_position
+			query.collide_with_areas = true
+			var results = space_state.intersect_point(query)
+			var absolute_z_index = get_absolute_z_index()
+			
+			var self_intersected = false
+			
+			for result in results:
+				var area2D = result.collider
+				var card = area2D.get_parent()
+				if card is Card:
+					if card == self:
+						self_intersected = true
+					elif card.get_absolute_z_index() > absolute_z_index:
+						return
+			
+			if not self_intersected:
+				return
+			
+			z_index = RenderingServer.CANVAS_ITEM_Z_MAX
+			_is_dragging = true
+			_dragging_touch_index = event.index
+			is_a_card_being_dragged = true
+			is_face_up = true
+			update_texture()
+			dragging_offset = touch_position - global_position
+		if event.index == _dragging_touch_index and event.pressed == false and _is_dragging:
 			z_index = 1
 			var closest_distance = 0.0
 			var card_to_drop_on = null
@@ -177,35 +214,15 @@ func _input(event : InputEvent) -> void:
 				position.x = 0
 				position.y = 0
 			_is_dragging = false
-	if event is InputEventMouseMotion:
+			is_a_card_being_dragged = false
+	elif event is InputEventScreenDrag:
 		if _is_dragging:
-			global_position = event.position - dragging_offset
-
-func _on_area_2d_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.is_pressed():
-			for card in hovered_cards:
-				var absolute_z_index = get_absolute_z_index()
-				if card != self and card.get_absolute_z_index() > absolute_z_index:
-					return
-					
-			if is_draggable():
-				z_index = RenderingServer.CANVAS_ITEM_Z_MAX
-				_is_dragging = true
-				is_face_up = true
-				update_texture()
-				dragging_offset = event.position - global_position
-			
-			card_clicked.emit()
+			var view_to_world = get_canvas_transform().affine_inverse()
+			var touch_position = view_to_world * event.position
+			global_position = touch_position - dragging_offset
 
 func get_absolute_z_index() -> int:
 	var parent = get_parent()
 	if parent is Card:
 		return parent.get_absolute_z_index() + z_index
 	return z_index
-
-func _on_area_2d_mouse_entered() -> void:
-	hovered_cards.append(self)
-
-func _on_area_2d_mouse_exited() -> void:
-	hovered_cards.erase(self)

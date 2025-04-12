@@ -21,8 +21,25 @@ func is_legal_drop(card : Card):
 	
 	return true
 
+func _input(event : InputEvent) -> void:
+	if event is InputEventScreenTouch and event.is_pressed():
+		var view_to_world = get_canvas_transform().affine_inverse()
+		var touch_position = view_to_world * event.position
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = touch_position
+		query.collide_with_areas = true
+		var results = space_state.intersect_point(query)
+		
+		var self_intersected = false
+		
+		for result in results:
+			var area2D = result.collider
+			if area2D.get_parent() == self:
+				pile_clicked.emit()
+				return
 
 func _on_area_2d_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
-	
-	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
-		pile_clicked.emit()
+	pass
+	#if event is InputEventScreenTouch and event.is_pressed():
+	#	pile_clicked.emit()
