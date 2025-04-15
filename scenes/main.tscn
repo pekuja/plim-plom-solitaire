@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3 uid="uid://dno1hy72gpft8"]
+[gd_scene load_steps=6 format=3 uid="uid://dno1hy72gpft8"]
 
 [ext_resource type="Script" uid="uid://c5ksntwd85jrw" path="res://scripts/main.gd" id="1_0wfyh"]
 [ext_resource type="PackedScene" uid="uid://dyevjwqt71k0t" path="res://scenes/card.tscn" id="1_o5qli"]
 [ext_resource type="PackedScene" uid="uid://drbmu8pyicaef" path="res://scenes/card_pile.tscn" id="3_sugp2"]
 [ext_resource type="Script" uid="uid://qrrleq2nto4g" path="res://scripts/card_input.gd" id="4_jyhfs"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jyhfs"]
+size = Vector2(99.035, 107.735)
 
 [node name="Main" type="Node2D"]
 texture_filter = 1
@@ -70,7 +73,11 @@ offset_right = 480.0
 offset_bottom = -819.0
 text = "Restart"
 
+[node name="TouchScreenButton" type="TouchScreenButton" parent="."]
+position = Vector2(430, -871)
+shape = SubResource("RectangleShape2D_jyhfs")
+
 [connection signal="card_clicked" from="Card Input" to="." method="_on_card_clicked"]
 [connection signal="card_drag_end" from="Card Input" to="." method="_on_card_drag_end"]
 [connection signal="card_drag_start" from="Card Input" to="." method="_on_card_drag_start"]
-[connection signal="pressed" from="Button" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="TouchScreenButton" to="." method="_on_restart_button_pressed"]
