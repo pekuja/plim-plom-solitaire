@@ -62,3 +62,12 @@ location = 3
 
 [node name="Card Input" type="Node2D" parent="."]
 script = ExtResource("4_jyhfs")
+
+[node name="Button" type="Button" parent="."]
+offset_left = 381.0
+offset_top = -922.0
+offset_right = 480.0
+offset_bottom = -819.0
+text = "Restart"
+
+[connection signal="pressed" from="Button" to="." method="_on_restart_button_pressed"]

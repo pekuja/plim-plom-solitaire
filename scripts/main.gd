@@ -16,6 +16,13 @@ extends Node2D
 	$"Cell 2",
 	]
 
+@onready var _foundations = [
+	$"Foundation 1",
+	$"Foundation 2",
+	$"Foundation 3",
+	$"Foundation 4",
+	]
+
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
 
@@ -34,6 +41,9 @@ func get_tableau_or_top_card(tableau : Node2D) -> Node2D:
 	return tableau
 
 func _ready():
+	game_setup()
+
+func game_setup():
 	generate_card_deck()
 	
 	_card_deck.shuffle()
@@ -101,6 +111,7 @@ func deck_clicked():
 				break
 	
 func generate_card_deck():
+	_card_deck.clear()
 	generate_card_suit(Card.Suit.Heart)
 	generate_card_suit(Card.Suit.Diamond)
 	generate_card_suit(Card.Suit.Club)
@@ -114,3 +125,20 @@ func generate_card_suit(suit : Card.Suit):
 		card.is_face_up = false
 		
 		_card_deck.append(card)
+
+func free_child_cards(parent):
+	var card = parent.get_node_or_null("Card")
+	if card:
+		card.queue_free()
+		parent.remove_child(card)
+
+func _on_restart_button_pressed() -> void:
+	free_child_cards(_deck_locator)
+	for cell in _cells:
+		free_child_cards(cell)
+	for foundation in _foundations:
+		free_child_cards(foundation)
+	for tableau in _tableaus:
+		free_child_cards(tableau)
+		
+	game_setup()
