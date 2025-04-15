@@ -52,7 +52,7 @@ func is_legal_drop(other_card : Card):
 		return false
 	if not is_top_card():
 		return false
-	if location == Location.Tableau and get_pile_size() >= 20:
+	if location == Location.Tableau and get_pile_size_up() + other_card.get_pile_size_down() > 20:
 		return false
 	return is_sequential(other_card)
 	
@@ -70,7 +70,7 @@ func is_sequential(other_card : Card):
 	
 	return true
 	
-func get_pile_size():
+func get_pile_size_up():
 	var parent = get_parent()
 	var pile_size = 1
 	while parent is Card:
@@ -78,6 +78,13 @@ func get_pile_size():
 		parent = parent.get_parent()
 	
 	return pile_size
+	
+func get_pile_size_down():
+	var child = get_node("Card")
+	if child:
+		return 1 + child.get_pile_size_down()
+	
+	return 1
 
 func _ready():
 	var atlasTexture : AtlasTexture = AtlasTexture.new()
