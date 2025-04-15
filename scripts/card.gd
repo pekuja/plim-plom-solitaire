@@ -54,10 +54,15 @@ func get_suit_name() -> String:
 	elif suit == Suit.Spade:
 		return "Spade"
 	return "Unknown"
+
+func get_card_name() -> String:
+	return "%s of %s" % [value, get_suit_name()]
 	
 func is_legal_drop(other_card : Card):
 	if location == Location.None or location == Location.Deck or \
 		location == Location.Cell or location == Location.Draw:
+		return false
+	if other_card.is_ancestor_of(self):
 		return false
 	if is_dragging():
 		return false
@@ -157,3 +162,19 @@ func get_absolute_z_index() -> int:
 	if parent is Card:
 		return parent.get_absolute_z_index() + z_index
 	return z_index
+
+func move_to(card_to_drop_on : Node2D):
+	var parent = get_parent()
+	if parent is Card:
+		parent.is_face_up = true
+		parent.update_texture()
+	parent.remove_child(self)
+	card_to_drop_on.add_child(self)
+	self.location = card_to_drop_on.location
+	
+	position.x = 0
+	if card_to_drop_on.location == Card.Location.Tableau and card_to_drop_on is Card:
+		position.y = Card.PILE_OFFSET
+	else:
+		position.y = 0
+	

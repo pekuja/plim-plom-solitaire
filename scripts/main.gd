@@ -25,6 +25,7 @@ extends Node2D
 
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
+var _previous_move : Node2D = null
 
 const CARDS_PER_TABLEAU = 5
 
@@ -143,6 +144,38 @@ func _on_restart_button_pressed() -> void:
 		
 	game_setup()
 
+func _is_better_move(new_move : Node2D, old_move : Node2D, card_to_move : Card):
+	if _previous_move and new_move == _previous_move:
+		return true
+	if new_move.location == Card.Location.Foundation:
+		return true
+	if new_move is Card and card_to_move.suit == new_move.suit:
+		return true
+	if old_move == null:
+		return true
+	return false
 
 func _on_card_clicked(card: Card) -> void:
-	print("Card ", card.value, " ", card.get_suit_name(), " clicked")
+	var best_move : Node2D = null
+	
+	for foundation in _foundations:
+		var top_card_or_pile = foundation.get_top_card_or_pile()
+		if top_card_or_pile.is_legal_drop(card) and _is_better_move(top_card_or_pile, best_move, card):
+			best_move = top_card_or_pile
+			
+	for tableau in _tableaus:
+		var top_card_or_pile = tableau.get_top_card_or_pile()
+		if top_card_or_pile.is_legal_drop(card) and _is_better_move(top_card_or_pile, best_move, card):
+			best_move = top_card_or_pile
+	
+	if best_move:
+		_previous_move = card
+		card.move_to(best_move)
+	else:
+		_previous_move = null
+
+func _on_card_drag_start(card: Card) -> void:
+	_previous_move = null
+
+func _on_card_drag_end(card: Card, drop_point: Node2D) -> void:
+	_previous_move = card

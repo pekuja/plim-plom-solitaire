@@ -7,6 +7,15 @@ signal pile_clicked
 func is_top_card():
 	var child_card = get_node_or_null("Card")
 	return child_card == null
+	
+func get_top_card_or_pile() -> Node2D:
+	var top_card_or_pile : Node2D = self
+	var child_card : Node2D = get_node_or_null("Card")
+	while child_card != null:
+		top_card_or_pile = child_card
+		child_card = top_card_or_pile.get_node_or_null("Card")
+	
+	return top_card_or_pile
 
 func is_legal_drop(card : Card):
 	if location == Card.Location.None or location == Card.Location.Deck or \

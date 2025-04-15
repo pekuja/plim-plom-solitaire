@@ -6,6 +6,8 @@ var is_a_card_being_dragged = false
 var dragged_card : Card = null
 
 signal card_clicked(card : Card)
+signal card_drag_start(card : Card)
+signal card_drag_end(card : Card, drop_point : Node2D)
 
 func _input(event : InputEvent) -> void:
 	if event is InputEventScreenTouch:
@@ -61,28 +63,19 @@ func _input(event : InputEvent) -> void:
 				
 				var parent = dragged_card.get_parent()
 				if card_to_drop_on:
-					if parent is Card:
-						parent.is_face_up = true
-						parent.update_texture()
-					parent.remove_child(dragged_card)
-					card_to_drop_on.add_child(dragged_card)
-					dragged_card.location = card_to_drop_on.location
-					
-					dragged_card.position.x = 0
-					if card_to_drop_on.location == Card.Location.Tableau and card_to_drop_on is Card:
-						dragged_card.position.y = Card.PILE_OFFSET
-					else:
-						dragged_card.position.y = 0
-						
-				elif parent is Card:
-					dragged_card.position.x = 0
-					if parent.location == Card.Location.Tableau:
-						dragged_card.position.y = Card.PILE_OFFSET
-					else:
-						dragged_card.position.y = 0
+					dragged_card.move_to(card_to_drop_on)
+					card_drag_end.emit(dragged_card, card_to_drop_on)
 				else:
-					dragged_card.position.x = 0
-					dragged_card.position.y = 0
+					if parent is Card:
+						dragged_card.position.x = 0
+						if parent.location == Card.Location.Tableau:
+							dragged_card.position.y = Card.PILE_OFFSET
+						else:
+							dragged_card.position.y = 0
+					else:
+						dragged_card.position.x = 0
+						dragged_card.position.y = 0
+					card_drag_end.emit(dragged_card, null)
 				dragged_card.set_dragging(false)
 				is_a_card_being_dragged = false
 			else:
@@ -93,6 +86,7 @@ func _input(event : InputEvent) -> void:
 			is_a_card_being_dragged = true
 			dragged_card.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 			dragged_card.set_dragging(true)
+			card_drag_start.emit(dragged_card)
 		var view_to_world = get_canvas_transform().affine_inverse()
 		var touch_position = view_to_world * event.position
 		dragged_card.global_position = touch_position - dragging_offset
