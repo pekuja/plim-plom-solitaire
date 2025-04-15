@@ -145,13 +145,18 @@ func _on_restart_button_pressed() -> void:
 	game_setup()
 
 func _is_better_move(new_move : Node2D, old_move : Node2D, card_to_move : Card):
-	if _previous_move and new_move == _previous_move:
+	if old_move == null:
 		return true
+	if _previous_move:
+		if new_move == _previous_move:
+			return true
+		if old_move == _previous_move:
+			return false
 	if new_move.location == Card.Location.Foundation:
 		return true
+	if old_move.location == Card.Location.Foundation:
+		return false
 	if new_move is Card and card_to_move.suit == new_move.suit:
-		return true
-	if old_move == null:
 		return true
 	return false
 
