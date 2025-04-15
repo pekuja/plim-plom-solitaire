@@ -142,3 +142,7 @@ func _on_restart_button_pressed() -> void:
 		free_child_cards(tableau)
 		
 	game_setup()
+
+
+func _on_card_clicked(card: Card) -> void:
+	print("Card ", card.value, " ", card.get_suit_name(), " clicked")

@@ -44,6 +44,17 @@ func is_red():
 func is_black():
 	return suit == Suit.Club or suit == Suit.Spade
 	
+func get_suit_name() -> String:
+	if suit == Suit.Heart:
+		return "Heart"
+	elif suit == Suit.Diamond:
+		return "Diamond"
+	elif suit == Suit.Club:
+		return "Club"
+	elif suit == Suit.Spade:
+		return "Spade"
+	return "Unknown"
+	
 func is_legal_drop(other_card : Card):
 	if location == Location.None or location == Location.Deck or \
 		location == Location.Cell or location == Location.Draw:

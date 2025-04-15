@@ -70,4 +70,5 @@ offset_right = 480.0
 offset_bottom = -819.0
 text = "Restart"
 
+[connection signal="card_clicked" from="Card Input" to="." method="_on_card_clicked"]
 [connection signal="pressed" from="Button" to="." method="_on_restart_button_pressed"]
