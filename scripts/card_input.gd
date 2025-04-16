@@ -9,6 +9,8 @@ signal card_clicked(card : Card)
 signal card_drag_start(card : Card)
 signal card_drag_end(card : Card, drop_point : Node2D)
 
+const DRAG_THRESHOLD = 25
+
 func _input(event : InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.is_pressed():
@@ -82,11 +84,15 @@ func _input(event : InputEvent) -> void:
 				card_clicked.emit(dragged_card)
 			dragged_card = null
 	elif event is InputEventScreenDrag and dragged_card:
-		if not is_a_card_being_dragged:
-			is_a_card_being_dragged = true
-			dragged_card.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
-			dragged_card.set_dragging(true)
-			card_drag_start.emit(dragged_card)
 		var view_to_world = get_canvas_transform().affine_inverse()
 		var touch_position = view_to_world * event.position
-		dragged_card.global_position = touch_position - dragging_offset
+			
+		if not is_a_card_being_dragged:
+			if (touch_position - (dragged_card.global_position + dragging_offset)).length() > DRAG_THRESHOLD:
+				is_a_card_being_dragged = true
+				dragged_card.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
+				dragged_card.set_dragging(true)
+				card_drag_start.emit(dragged_card)
+			
+		if is_a_card_being_dragged:
+			dragged_card.global_position = touch_position - dragging_offset
