@@ -26,8 +26,10 @@ extends Node2D
 var _card_deck : Array[Card] = []
 var _deck_top_card : Card = null
 var _previous_move : Node2D = null
+var _previous_move_timestamp : int = -1
 
 const CARDS_PER_TABLEAU = 5
+const MOVE_REPEAT_THRESHOLD = 1000
 
 func get_tableau_or_top_card(tableau : Node2D) -> Node2D:	
 	var card : Card = tableau.get_node_or_null("Card")
@@ -147,16 +149,23 @@ func _on_restart_button_pressed() -> void:
 func _is_better_move(new_move : Node2D, old_move : Node2D, card_to_move : Card):
 	if old_move == null:
 		return true
+	
 	if _previous_move:
-		if new_move == _previous_move:
-			return true
-		if old_move == _previous_move:
-			return false
+		if _previous_move_timestamp + MOVE_REPEAT_THRESHOLD > Time.get_ticks_msec():
+			print(_previous_move_timestamp, " + ", MOVE_REPEAT_THRESHOLD, " > ", Time.get_ticks_msec())
+			if new_move == _previous_move:
+				return true
+			if old_move == _previous_move:
+				return false
+		else:
+			print(_previous_move_timestamp, " + ", MOVE_REPEAT_THRESHOLD, " < ", Time.get_ticks_msec())
 	if new_move.location == Card.Location.Foundation:
 		return true
 	if old_move.location == Card.Location.Foundation:
 		return false
 	if new_move is Card and card_to_move.suit == new_move.suit:
+		return true
+	if not old_move is Card:
 		return true
 	return false
 
@@ -175,6 +184,7 @@ func _on_card_clicked(card: Card) -> void:
 	
 	if best_move:
 		_previous_move = card
+		_previous_move_timestamp = Time.get_ticks_msec()
 		card.move_to(best_move)
 	else:
 		_previous_move = null
@@ -183,4 +193,4 @@ func _on_card_drag_start(card: Card) -> void:
 	_previous_move = null
 
 func _on_card_drag_end(card: Card, drop_point: Node2D) -> void:
-	_previous_move = card
+	_previous_move = null
