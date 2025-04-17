@@ -163,18 +163,30 @@ func get_absolute_z_index() -> int:
 		return parent.get_absolute_z_index() + z_index
 	return z_index
 
-func move_to(card_to_drop_on : Node2D):
+func move_to(card_to_drop_on : Node2D, tween_slowdown : int = 0):
 	var parent = get_parent()
-	if parent is Card:
+	if parent is Card and parent.location == Location.Tableau:
 		parent.is_face_up = true
 		parent.update_texture()
-	parent.remove_child(self)
+	
+	var old_position = global_position
+	
+	if parent:
+		parent.remove_child(self)
 	card_to_drop_on.add_child(self)
 	self.location = card_to_drop_on.location
 	
-	position.x = 0
+	global_position = old_position
+	
+	var target_position : Vector2 = Vector2(0, 0)
+	
 	if card_to_drop_on.location == Card.Location.Tableau and card_to_drop_on is Card:
-		position.y = Card.PILE_OFFSET
-	else:
-		position.y = 0
+		target_position.y = Card.PILE_OFFSET
+		
+	var tween = create_tween()
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(self, "position", target_position, 0.1 + tween_slowdown * 0.1)
+	z_index = RenderingServer.CANVAS_ITEM_Z_MAX
+	tween.tween_property(self, "z_index", 1, 0.1 + tween_slowdown * 0.1)
+	
 	

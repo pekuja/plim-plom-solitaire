@@ -51,61 +51,55 @@ func game_setup():
 	
 	_card_deck.shuffle()
 	
-	var index = 0
-	var tableau_index = 0
 	_deck_top_card = null
+		
 	for card in _card_deck:
-		if tableau_index < _tableaus.size():
-			card.location = Card.Location.Tableau
-			var tableau = _tableaus[tableau_index]
-			if _deck_top_card:
-				card.position.y = Card.PILE_OFFSET
-				_deck_top_card.add_child(card)
-			else:
-				tableau.add_child(card)
-			_deck_top_card = card
-			
-			index += 1
-			
-			if index >= CARDS_PER_TABLEAU:
-				card.is_face_up = true
-				card.update_texture()
-				_deck_top_card = null
-				index = 0
-				tableau_index += 1
-		elif index < _cells.size():
-			card.location = Card.Location.Cell
-			_cells[index].add_child(card)
-			card.is_face_up = true
-			card.update_texture()
-			index += 1
+		card.location = Card.Location.Deck
+		if _deck_top_card:
+			_deck_top_card.add_child(card)
 		else:
-			card.location = Card.Location.Deck
-			if _deck_top_card:
-				_deck_top_card.add_child(card)
-			else:
-				_deck_locator.add_child(card)
-			_deck_top_card = card
-			index += 1
+			_deck_locator.add_child(card)
+		_deck_top_card = card
+		
+	for tableau_index in range(0, _tableaus.size()):
+		var next_card : Card
+		var tableau = _tableaus[tableau_index]
+		var top_card = tableau
+		for index in range(0, CARDS_PER_TABLEAU):
+			next_card = _deck_top_card
+			var parent : Card = next_card.get_parent()
+			next_card.move_to(top_card, tableau_index)
+			
+			top_card = next_card
+			
+			_deck_top_card = parent
+			
+		next_card.is_face_up = true
+		next_card.update_texture()
+	
+	for cell_index in range(0, _cells.size()):
+		var next_card : Card = _deck_top_card
+		var parent : Card = next_card.get_parent()
+		next_card.move_to(_cells[cell_index], cell_index)
+		next_card.is_face_up = true
+		next_card.update_texture()
+		
+		_deck_top_card = parent
 	
 	_deck_locator.pile_clicked.connect(deck_clicked)
 	
 func deck_clicked():
 	if _deck_top_card:
+		var index = 0
 		for tableau in _tableaus:
 			var parent = _deck_top_card.get_parent()
-			parent.remove_child(_deck_top_card)
-			
 			var tableau_or_top_card = get_tableau_or_top_card(tableau)
 			
-			tableau_or_top_card.add_child(_deck_top_card)
+			_deck_top_card.move_to(tableau_or_top_card, index)
+			index += 1
 			
 			_deck_top_card.is_face_up = true
 			_deck_top_card.update_texture()
-			_deck_top_card.location = Card.Location.Tableau
-			
-			if tableau_or_top_card is Card:
-				_deck_top_card.position.y = Card.PILE_OFFSET
 			
 			if parent is Card:
 				_deck_top_card = parent
@@ -152,13 +146,10 @@ func _is_better_move(new_move : Node2D, old_move : Node2D, card_to_move : Card):
 	
 	if _previous_move:
 		if _previous_move_timestamp + MOVE_REPEAT_THRESHOLD > Time.get_ticks_msec():
-			print(_previous_move_timestamp, " + ", MOVE_REPEAT_THRESHOLD, " > ", Time.get_ticks_msec())
 			if new_move == _previous_move:
 				return true
 			if old_move == _previous_move:
 				return false
-		else:
-			print(_previous_move_timestamp, " + ", MOVE_REPEAT_THRESHOLD, " < ", Time.get_ticks_msec())
 	if new_move.location == Card.Location.Foundation:
 		return true
 	if old_move.location == Card.Location.Foundation:
