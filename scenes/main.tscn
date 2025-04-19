@@ -21,11 +21,11 @@ location = 1
 
 [node name="Cell 1" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-400, 820)
-location = 1
+location = 5
 
 [node name="Cell 2" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-200, 820)
-location = 1
+location = 5
 
 [node name="Foundation 1" parent="." instance=ExtResource("3_sugp2")]
 position = Vector2(-400, -810)
@@ -67,17 +67,30 @@ location = 3
 script = ExtResource("4_jyhfs")
 
 [node name="Button" type="Button" parent="."]
-offset_left = 381.0
-offset_top = -922.0
-offset_right = 480.0
-offset_bottom = -819.0
+offset_left = 358.0
+offset_top = -864.0
+offset_right = 457.0
+offset_bottom = -761.0
 text = "Restart"
 
+[node name="Button2" type="Button" parent="."]
+offset_left = 48.0
+offset_top = 775.0
+offset_right = 147.0
+offset_bottom = 878.0
+text = "Undo"
+
 [node name="TouchScreenButton" type="TouchScreenButton" parent="."]
-position = Vector2(430, -871)
+position = Vector2(407, -813)
+shape = SubResource("RectangleShape2D_jyhfs")
+
+[node name="TouchScreenButton2" type="TouchScreenButton" parent="."]
+position = Vector2(97, 826)
 shape = SubResource("RectangleShape2D_jyhfs")
 
 [connection signal="card_clicked" from="Card Input" to="." method="_on_card_clicked"]
 [connection signal="card_drag_end" from="Card Input" to="." method="_on_card_drag_end"]
 [connection signal="card_drag_start" from="Card Input" to="." method="_on_card_drag_start"]
+[connection signal="card_moved" from="Card Input" to="." method="_on_card_moved"]
 [connection signal="pressed" from="TouchScreenButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="TouchScreenButton2" to="." method="_on_undo_button_pressed"]

@@ -30,6 +30,8 @@ var _previous_move_timestamp : int = -1
 
 const CARDS_PER_TABLEAU = 5
 const MOVE_REPEAT_THRESHOLD = 1000
+	
+var _move_history : Array[Card.Move]
 
 func get_tableau_or_top_card(tableau : Node2D) -> Node2D:	
 	var card : Card = tableau.get_node_or_null("Card")
@@ -47,6 +49,7 @@ func _ready():
 	game_setup()
 
 func game_setup():
+	_move_history.clear()
 	generate_card_deck()
 	
 	_card_deck.shuffle()
@@ -106,6 +109,12 @@ func deck_clicked():
 			else:
 				_deck_top_card = null
 				break
+		
+		var draw_move = Card.Move.new()
+		draw_move.is_draw = true
+		draw_move.timestamp = Time.get_ticks_msec()
+		draw_move.from = _deck_top_card
+		_move_history.append(draw_move)
 	
 func generate_card_deck():
 	_card_deck.clear()
@@ -176,12 +185,43 @@ func _on_card_clicked(card: Card) -> void:
 	if best_move:
 		_previous_move = card
 		_previous_move_timestamp = Time.get_ticks_msec()
-		card.move_to(best_move)
+		var move = card.move_to(best_move)
+		_move_history.append(move)
 	else:
 		_previous_move = null
 
-func _on_card_drag_start(card: Card) -> void:
+func _on_card_drag_start(_card: Card) -> void:
 	_previous_move = null
 
-func _on_card_drag_end(card: Card, drop_point: Node2D) -> void:
+func _on_card_drag_end(_card: Card, _drop_point: Node2D) -> void:
 	_previous_move = null
+
+func _on_card_moved(move: Card.Move) -> void:
+	_move_history.append(move)
+
+func _on_undo_button_pressed() -> void:
+	if _move_history.is_empty():
+		return
+	
+	var move : Card.Move = _move_history.pop_back()
+	if move.is_draw:
+		# iterate over the tableaus in reverse order to match the original order of moves
+		for index in range(_tableaus.size() - 1, -1, -1):
+			var tableau = _tableaus[index]
+			var top_card_or_pile = tableau.get_top_card_or_pile()
+			assert(top_card_or_pile is Card, "When undoing a draw move, the top of a pile is not a card")
+			
+			top_card_or_pile.is_face_up = false
+			top_card_or_pile.update_texture()
+			if _deck_top_card:
+				top_card_or_pile.move_to(_deck_top_card)
+			else:
+				top_card_or_pile.move_to(_deck_locator)
+			_deck_top_card = top_card_or_pile
+		return
+		
+	move.card_moved.move_to(move.from)
+	if move.card_flipped:
+		move.card_flipped.is_face_up = false
+		move.card_flipped.update_texture()
+	

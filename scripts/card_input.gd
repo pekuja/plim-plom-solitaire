@@ -8,6 +8,7 @@ var dragged_card : Card = null
 signal card_clicked(card : Card)
 signal card_drag_start(card : Card)
 signal card_drag_end(card : Card, drop_point : Node2D)
+signal card_moved(move : Card.Move)
 
 const DRAG_THRESHOLD = 25
 
@@ -65,7 +66,8 @@ func _input(event : InputEvent) -> void:
 				
 				var parent = dragged_card.get_parent()
 				if card_to_drop_on:
-					dragged_card.move_to(card_to_drop_on)
+					var move = dragged_card.move_to(card_to_drop_on)
+					card_moved.emit(move)
 					card_drag_end.emit(dragged_card, card_to_drop_on)
 				else:
 					if parent is Card:

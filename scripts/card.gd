@@ -38,6 +38,14 @@ const PILE_OFFSET = 56
 
 var _is_dragging : bool = false
 
+class Move:
+	var card_moved : Card
+	var from: Node2D
+	var to : Node2D
+	var card_flipped : Card
+	var timestamp : int
+	var is_draw : bool
+
 func is_red():
 	return suit == Suit.Heart or suit == Suit.Diamond
 	
@@ -96,7 +104,7 @@ func get_pile_size_up():
 	return pile_size
 	
 func get_pile_size_down():
-	var child = get_node("Card")
+	var child = get_node_or_null("Card")
 	if child:
 		return 1 + child.get_pile_size_down()
 	
@@ -113,7 +121,7 @@ func _process(_delta):
 	_label.text = "%s\n%s" % [get_absolute_z_index(), location]
 	
 func is_draggable():
-	if location == Location.None or location == Location.Foundation:
+	if location == Location.None or location == Location.Foundation or location == Location.Deck:
 		return false
 	if not is_top_card():
 		if location != Location.Tableau:
@@ -143,8 +151,8 @@ func is_dragging():
 		
 	return false
 	
-func set_dragging(value : bool):
-	_is_dragging = value
+func set_dragging(is_dragging : bool):
+	_is_dragging = is_dragging
 	
 func update_texture():
 	var atlasTexture : AtlasTexture = _sprite2D.texture
@@ -163,14 +171,19 @@ func get_absolute_z_index() -> int:
 		return parent.get_absolute_z_index() + z_index
 	return z_index
 
-func move_to(card_to_drop_on : Node2D, tween_slowdown : int = 0):
+func move_to(card_to_drop_on : Node2D, tween_slowdown : int = 0) -> Move:
+	var move = Move.new()
+	move.card_moved = self
+	move.timestamp = Time.get_ticks_msec()
 	var parent = get_parent()
-	if parent is Card and parent.location == Location.Tableau:
+	if parent is Card and parent.location == Location.Tableau and not parent.is_face_up:
+		move.card_flipped = parent
 		parent.is_face_up = true
 		parent.update_texture()
 	
 	var old_position = global_position
 	
+	move.from = parent
 	if parent:
 		parent.remove_child(self)
 	card_to_drop_on.add_child(self)
@@ -180,6 +193,7 @@ func move_to(card_to_drop_on : Node2D, tween_slowdown : int = 0):
 	
 	var target_position : Vector2 = Vector2(0, 0)
 	
+	move.to = card_to_drop_on
 	if card_to_drop_on.location == Card.Location.Tableau and card_to_drop_on is Card:
 		target_position.y = Card.PILE_OFFSET
 		
@@ -188,5 +202,7 @@ func move_to(card_to_drop_on : Node2D, tween_slowdown : int = 0):
 	tween.tween_property(self, "position", target_position, 0.1 + tween_slowdown * 0.1)
 	z_index = RenderingServer.CANVAS_ITEM_Z_MAX
 	tween.tween_property(self, "z_index", 1, 0.1 + tween_slowdown * 0.1)
+	
+	return move
 	
 	

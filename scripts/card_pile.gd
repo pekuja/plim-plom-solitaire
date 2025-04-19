@@ -40,8 +40,6 @@ func _input(event : InputEvent) -> void:
 		query.collide_with_areas = true
 		var results = space_state.intersect_point(query)
 		
-		var self_intersected = false
-		
 		for result in results:
 			var area2D = result.collider
 			if area2D.get_parent() == self:
