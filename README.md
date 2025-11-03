@@ -1,5 +1,5 @@
-![Screenshot of Plim Plom Solitaire](/plimplom_solitaire.png?raw=true)
-
 I made this solitaire game to practice mobile game development and card game mechanics in particular. Initially I implemented Klondike rules, but later I transformed it to use rules from Flip Flop Solitaire by Zach Gage, as that's in my opinion a much more enjoyable solitaire variant.
 
 You can drag cards on top of each other as long as they're one apart in value, either up or down, or you can move whole stacks of cards if they're all in sequence and of the same suit. You can also tap cards or the bottoms of such stacks to have the game move them for you automatically. It will prefer moving the card to the foundations, then to cards of the same suit, then to a card of a different suit, and finally to an empty pile. Also over all of these it will prefer to place a card on a pile that you just moved another card to, but only for a very brief moment. This is to make sure that if you're tapping on a pile of cards repeatedly, they will all go in the same place.
+
+<img src="/plimplom_solitaire.png?raw=true" width="50%" alt="Screenshot of Plim Plom Solitaire"/>
